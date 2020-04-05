@@ -1,0 +1,34 @@
+<html>
+{%include "head.html"%}
+
+<head>
+    <title>{{ title }} - Microblog</title>
+</head>
+
+<body>
+    {%include "nav.html"%}
+    <h1>Hello, {{ user.username }}!</h1>
+    <table class="table">
+        <th>
+            <td>Description</td>
+            <td>Category</td>
+            <td>Status</td>
+            <td>Submitted By</td>
+            <td>Up</td>
+            <td>Down</td>
+        </th>
+        {%for i in range(0, 15)%}
+
+        <tr>
+            <td></td>
+            <td>{{ complaints[i].description }}</td>
+            <td>{{ complaints[i].category_id}}</td>
+            <td>{{ complaints[i].subject}}</td>
+            <td>{{ complaints[i].created_date}}</td>
+            <td>{{ complaints[i].submitted_by }}</td>
+            </tr>
+        {%endfor%}
+    </table>
+</body>
+
+</html>
