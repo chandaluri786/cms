@@ -1,0 +1,212 @@
+<html>
+
+<head>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="/web/font-awesome-4.7.0/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.6/jsrender.min.js"></script>
+
+
+    <script id="template" type="text/x-jsrender">
+
+        <table class="table table-bordered table-hover dataTablesTable">
+          <th>Select</th>
+            <th>Id</th>
+            <th>Subject</th>                
+            <th>Category Id</th>
+            <th>Description</th>
+            <th>Submitted By</th>
+            <th>Created Date</th>
+            {{for complaint[0] }}
+            <tr>
+              <td><input type='checkbox' /></td>
+              <td id="id">{{:id}}</td>
+              <td>{{:subject}}</td>
+              <td>{{:category_id}}</td>
+              <td>{{:description}}</td>
+              <td>{{:submitted_by}}</td>
+              <td>{{:created_date}}</td>
+            </tr>     
+         {{/for}}
+        </table>
+            
+  </script>
+    <script type="text/javascript" language="javascript">
+        $(document).ready(function () {
+            $.ajax({
+                url: "/api/complaint", success: function (data) {
+                    console.log(data);
+                    $("#count").append(data.complaint[0].length);
+                    $('#output').append($("#template").render(data));
+                }
+            });
+
+            $('#delete').click(function () {
+                var result = $("tr:has(:checked)")
+                console.log(result);
+                if (result.length > 1) {
+                    alert("Please select single record");
+                }
+                if (result.length == 1) {
+                    for (i = 0; i < result.length; i++) {
+                        id = result.children('#id').slice(0).text().trim();
+                        $.ajax({
+                            url: '/api/complaint/' + id,
+                            type: 'DELETE',
+                            success: function (result) {
+                                alert("Deleted Complaint record successfully:\t" + id);
+                                location.reload();
+                            }
+                        });
+                    }
+                }
+            });
+            var dialog, form,
+
+                subject = $("#subject"),
+                description = $("#description"),
+                category_id = $("#category_id"),
+                submitted_by = $("#submitted_by"),
+                allFields = $([]).add(subject).add(description).add(category_id).add(submitted_by),
+                tips = $(".validateTips");
+
+
+                function updateTips(t) {
+        tips
+          .text(t)
+          .addClass("ui-state-highlight");
+        setTimeout(function () {
+          tips.removeClass("ui-state-highlight", 1500);
+        }, 500);
+      }
+
+      function checkLength(o, n, min, max) {
+        if (o.val().length > max || o.val().length < min) {
+          o.addClass("ui-state-error");
+          updateTips("Length of " + n + " must be between " +
+            min + " and " + max + ".");
+          return false;
+        } else {
+          return true;
+        }
+      }
+
+      function checkRegexp(o, regexp, n) {
+        if (!(regexp.test(o.val()))) {
+          o.addClass("ui-state-error");
+          updateTips(n);
+          return false;
+        } else {
+          return true;
+        }
+      }
+      function addComplaint() {
+        var valid = true;
+        allFields.removeClass("ui-state-error");
+        valid = valid && checkLength(subject, "subject", 3, 16);
+        valid = valid && checkRegexp(subject, /^[a-z]([0-9a-z_\s])+$/i, "Subject may consist of a-z, 0-9, underscores, spaces and must begin with a letter.");
+        valid = valid && checkLength(description, "description", 3, 16);
+        valid = valid && checkRegexp(description, /^[a-z]([0-9a-z_\s])+$/i, "Description may consist of a-z, 0-9, underscores, spaces and must begin with a letter.");
+
+        if (valid) {
+          alert("subject:\t" + subject.val() + "\n" + "description:\t" + description.val());
+          $.ajax({
+            url: '/api/complaint',
+            type: "POST",
+            data: JSON.stringify(
+                { "subject": subject.val(), 
+                  "description": description.val(),
+                  "category_id": category_id.val() ,
+                   "submitted_by": submitted_by.val()}),
+            dataType: "json",
+            contentType: 'application/json',
+            success: function (result) {
+              alert(" Created New Complaint Successfully");
+              location.reload()
+            }
+          });
+          dialog.dialog("close");
+        }
+        return valid;
+      }
+
+
+
+            dialog = $("#dialog-form").dialog({
+                autoOpen: false,
+                height: 400,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Create an Complaint": addComplaint,
+                    Cancel: function () {
+                        dialog.dialog("close");
+                    }
+                },
+                close: function () {
+                    form[0].reset();
+                    allFields.removeClass("ui-state-error");
+                }
+            });
+            form = dialog.find("form").on("submit", function (event) {
+        event.preventDefault();
+        addComplaint();
+      });
+
+
+            $('#create').click(function () {
+                dialog.dialog("open")
+
+            });
+            
+
+        });
+    </script>
+
+</head>
+
+<body>
+
+    <div>
+        <div>
+            <button type="button" class="btn btn-outline-primary btn-lg">
+                Complaints <span id="count" class="badge btn-danger"></span>
+            </button>
+        </div>
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <h4>Complaints :</h4>
+            <button id="create" type="button" class="btn btn-primary"><i class="fa fa-plus"
+                    aria-hidden="true"></i>Create</button>
+            <button id="edit" type="button" class="btn btn-warning"><i class="fa fa-pencil"
+                    aria-hidden="true"></i>Edit</button>
+            <button id="delete" type="button" class="btn btn-danger"><i class="fa fa-trash"
+                    aria-hidden="true"></i>Delete</button>
+        </div>
+        <div id="output"></div>
+        <div id="dialog-form" title="Create New Category">
+            <p class="validateTips">All form fields are required.</p>
+            <form>
+                <fieldset>
+                    <label for="subject">Subject</label>
+                    <input type="text" name="subject" id="subject" value=""
+                        class="text ui-widget-content ui-corner-all">
+                    <label for="description">Description</label>
+                    <input type="textarea" name="description" id="description" value=""
+                        class="text ui-widget-content ui-corner-all" cols="10" rows="5">
+                    <lable>Category Id</lable>
+                    <input type="text" name="category_id" id="category_id" value=""
+                        class="text ui-widget-content ui-corner-all">
+                        <lable>Submitted By</lable>
+                        <input type="text" name="submitted_by" id="submitted_by" value=""
+                            class="text ui-widget-content ui-corner-all">
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+</body>
