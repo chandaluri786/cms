@@ -16,20 +16,25 @@
         <table class="table table-bordered table-hover dataTablesTable">
           <th>Select</th>
             <th>Id</th>
-            <th>Subject</th>                
-            <th>Category Id</th>
-            <th>Description</th>
+                     
+            <th>Category </th>
+            <th>Status</th>
+            <th>Subject</th>            
             <th>Submitted By</th>
             <th>Created Date</th>
+            <th>Liked</th>
+            <th>Disliked</th>
             {{for complaint[0] }}
             <tr>
               <td><input type='checkbox' /></td>
               <td id="id">{{:id}}</td>
-              <td>{{:subject}}</td>
-              <td>{{:category_id}}</td>
-              <td>{{:description}}</td>
-              <td>{{:submitted_by}}</td>
+              <td>{{:category.name}}</td>
+              <td>{{:status}}</td>
+              <td>{{:name}}</td>
+              <td>{{:user.username}}</td>
               <td>{{:created_date}}</td>
+              <td><i class="fa fa-thumbs-o-up" style="font-size:36px"><span  class="badge btn-success" style="font-size:16px" >{{:liked_count }}</span></i></td>
+              <td><i class="fa fa-thumbs-o-down" style="font-size:36px"><span  class="badge btn-danger" style="font-size:16px" >{{:disliked_count}}</span></i></td>
             </tr>     
          {{/for}}
         </table>
